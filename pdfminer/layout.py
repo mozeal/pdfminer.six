@@ -463,7 +463,7 @@ class LTExpandableContainer(LTContainer[LTItemT]):
     # Incompatible override: we take an LTComponent (with bounding box), but
     # super() LTContainer only considers LTItem (no bounding box).
     def add(self, obj: LTComponent) -> None:  # type: ignore[override]
-        LTContainer.add(self, cast(LTItemT, obj))
+        LTContainer.add(self, cast(LTItemT, obj)) # Jimmy - add casted unicode character to LTContainer
         self.set_bbox(
             (
                 min(self.x0, obj.x0),
@@ -769,8 +769,9 @@ class LTLayoutContainer(LTContainer[LTComponent]):
                     obj0.is_voverlap(obj1)
                     and min(obj0.height, obj1.height) * laparams.line_overlap
                     < obj0.voverlap(obj1)
-                    and obj0.hdistance(obj1)
-                    < max(obj0.width, obj1.width) * laparams.char_margin
+                    and ((obj0.hdistance(obj1)
+                    < max(obj0.width, obj1.width) * laparams.char_margin) and (obj0.width > 0 or obj1.width > 0))
+                    # Jimmy - do not test for characters h-distance if character is/are zero width character
                 )
 
                 # valign: obj0 and obj1 is vertically aligned.

@@ -974,7 +974,7 @@ class PDFSimpleFont(PDFFont):
     def to_unichr(self, cid: int) -> str:
         if self.unicode_map:
             try:
-                return self.unicode_map.get_unichr(cid)
+                return self.unicode_map.get_unichr(cid) # Jimmy - cid to unicode char (PDF Simple Font)
             except KeyError:
                 pass
         try:
@@ -1051,7 +1051,7 @@ class PDFCIDFont(PDFFont):
         strict: bool = settings.STRICT,
     ) -> None:
         try:
-            self.basefont = literal_name(spec["BaseFont"])
+            self.basefont = literal_name(spec["BaseFont"]) # Jimmy - TTF Font name
         except KeyError:
             if strict:
                 raise PDFFontError("BaseFont is missing")
@@ -1081,7 +1081,7 @@ class PDFCIDFont(PDFFont):
             if isinstance(spec["ToUnicode"], PDFStream):
                 strm = stream_value(spec["ToUnicode"])
                 self.unicode_map = FileUnicodeMap()
-                CMapParser(self.unicode_map, BytesIO(strm.get_data())).run()
+                CMapParser(self.unicode_map, BytesIO(strm.get_data())).run() # Jimmy - ToUnicode data loaded from stream
             else:
                 cmap_name = literal_name(spec["ToUnicode"])
                 encoding = literal_name(spec["Encoding"])
@@ -1188,7 +1188,20 @@ class PDFCIDFont(PDFFont):
         try:
             if not self.unicode_map:
                 raise KeyError(cid)
-            return self.unicode_map.get_unichr(cid)
+            # return self.unicode_map.get_unichr(cid) # Jimmy - Thai temporally fixed
+            if x  == "\x00": # Jimmy
+                if self.basefont == "AAAAAA+BrowalliaNew":
+                    if( cid >= 201 and cid <= 205 ):
+                        x = chr(0xe48+(cid-201))
+                    elif( cid >= 344 and cid <= 353 ):
+                        x = chr(ord('0')+(cid-344))
+                    else:
+                        x = "[" + str(cid) + "]"
+                        print( f"Unknown CID: {x}" )
+                else:
+                    x  = "[" + str(cid) + "]"
+                    print( f"Unknown CID: {x}" )
+            return x
         except KeyError:
             raise PDFUnicodeNotDefined(self.cidcoding, cid)
 

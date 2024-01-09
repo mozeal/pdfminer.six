@@ -157,7 +157,7 @@ class UnicodeMap(CMapBase):
 
     def get_unichr(self, cid: int) -> str:
         log.debug("get_unichr: %r, %r", self, cid)
-        return self.cid2unichr[cid]
+        return self.cid2unichr[cid] # Jimmy - convert cid to unicode character (UnicodeMap)
 
     def dump(self, out: TextIO = sys.stdout) -> None:
         for (k, v) in sorted(self.cid2unichr.items()):
