@@ -1188,7 +1188,9 @@ class PDFCIDFont(PDFFont):
         try:
             if not self.unicode_map:
                 raise KeyError(cid)
-            # return self.unicode_map.get_unichr(cid) # Jimmy - Thai temporally fixed
+
+            # return self.unicode_map.get_unichr(cid) 
+            x = self.unicode_map.get_unichr(cid) # Jimmy - Thai temporally fixed
             if x  == "\x00": # Jimmy
                 if self.basefont == "AAAAAA+BrowalliaNew":
                     if( cid >= 201 and cid <= 205 ):

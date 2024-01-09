@@ -482,9 +482,39 @@ class LTTextContainer(LTExpandableContainer[LTItemT], LTText):
         return
 
     def get_text(self) -> str:
-        return "".join(
+        text = "".join(
             cast(LTText, obj).get_text() for obj in self if isinstance(obj, LTText)
         )
+        # Jimmy fix thai character sara-um
+        #print( text )
+        t = ""
+        new_text = ""
+        f = False
+        skip = False
+        for i in range(len(text)):
+            if skip:
+                skip = False
+                continue
+            c = text[i]
+            if ord(c) == 0xe4d:
+                #print( "found sara-um")
+                if i < len(text)-1:
+                    cc = text[i+1]
+                    if ord(cc) == 0xe32:
+                        #print( "found sara-um + sara-aa")
+                        c = chr(0xe33)
+                        skip = True
+                        f = True
+            t += hex(ord(c))+" "
+            new_text += c
+        if f:
+            t = ""
+            for c in new_text:
+                t += hex(ord(c))+" "
+            #print( t )
+        #print( new_text )
+
+        return new_text
 
 
 TextLineElement = Union[LTChar, LTAnno]
@@ -536,7 +566,10 @@ class LTTextLineHorizontal(LTTextLine):
         if isinstance(obj, LTChar) and self.word_margin:
             margin = self.word_margin * max(obj.width, obj.height)
             if self._x1 < obj.x0 - margin:
-                LTContainer.add(self, LTAnno(" "))
+                # Jimmy - add a space character if the distance between the last character and the current character is greater than the margin
+                # but not if the current character is a zero width character
+                if obj.adv != 0:
+                    LTContainer.add(self, LTAnno(" "))
         self._x1 = obj.x1
         super().add(obj)
         return
@@ -770,7 +803,7 @@ class LTLayoutContainer(LTContainer[LTComponent]):
                     and min(obj0.height, obj1.height) * laparams.line_overlap
                     < obj0.voverlap(obj1)
                     and ((obj0.hdistance(obj1)
-                    < max(obj0.width, obj1.width) * laparams.char_margin) and (obj0.width > 0 or obj1.width > 0))
+                    < max(obj0.width, obj1.width) * laparams.char_margin) or (obj0.width == 0 or obj1.width == 0))
                     # Jimmy - do not test for characters h-distance if character is/are zero width character
                 )
 
