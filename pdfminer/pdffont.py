@@ -950,6 +950,7 @@ class PDFSimpleFont(PDFFont):
         widths: FontWidthDict,
         spec: Mapping[str, Any],
     ) -> None:
+        #print( f"PDFSimpleFont: spec={spec}") # Jimmy
         # Font encoding is specified either by a name of
         # built-in encoding or a dictionary that describes
         # the differences.
@@ -957,12 +958,21 @@ class PDFSimpleFont(PDFFont):
             encoding = resolve1(spec["Encoding"])
         else:
             encoding = LITERAL_STANDARD_ENCODING
+            #"StandardEncoding": std2unicode,
+            #"MacRomanEncoding": mac2unicode,
+            #"WinAnsiEncoding": win2unicode,
+            #"PDFDocEncoding": pdf2unicode,
+            #encoding = LIT("PDFDocEncoding")
+        print( f"PDFSimpleFont: encoding={encoding}") # Jimmy
         if isinstance(encoding, dict):
             name = literal_name(encoding.get("BaseEncoding", LITERAL_STANDARD_ENCODING))
             diff = list_value(encoding.get("Differences", []))
             self.cid2unicode = EncodingDB.get_encoding(name, diff)
         else:
             self.cid2unicode = EncodingDB.get_encoding(literal_name(encoding))
+            #self.cid2unicode = {1:'ค',2:'ู',3:'่',4:'ม',5:'ื',6:'อ',7:'เ',8:'ต',9:'ร',10:'ี',11:'ย',12:'ส',13:'บ',15:'พ',18:'า',19:'ช',20:'ว',21:'ศ',22:'ึ',23:'ษ',29:'ห',30:'น',32:' ',33:'้',
+            #    34:'ั',35:'ฐ',37:'ท',38:'ุ',39:'ง',46:'ใ',47:'ไ',48:'ณ',49:'่',50:'ด',51:'๒',52:'๖',59:'ป',60:'็',61:'ผ',62:'ะ'}
+            print( f"PDFSimpleFont: cid2unicode={self.cid2unicode}") # Jimmy
         self.unicode_map: Optional[UnicodeMap] = None
         if "ToUnicode" in spec:
             strm = stream_value(spec["ToUnicode"])
@@ -985,6 +995,7 @@ class PDFSimpleFont(PDFFont):
 
 class PDFType1Font(PDFSimpleFont):
     def __init__(self, rsrcmgr: "PDFResourceManager", spec: Mapping[str, Any]) -> None:
+        print( f"PDFType1Font: spec={spec}") # Jimmy
         try:
             self.basefont = literal_name(spec["BaseFont"])
         except KeyError:
@@ -1010,6 +1021,7 @@ class PDFType1Font(PDFSimpleFont):
             data = self.fontfile.get_data()[:length1]
             parser = Type1FontHeaderParser(BytesIO(data))
             self.cid2unicode = parser.get_encoding()
+            print( f"PDFType1Font: cid2unicode={self.cid2unicode}") # Jimmy
         return
 
     def __repr__(self) -> str:
@@ -1023,6 +1035,7 @@ class PDFTrueTypeFont(PDFType1Font):
 
 class PDFType3Font(PDFSimpleFont):
     def __init__(self, rsrcmgr: "PDFResourceManager", spec: Mapping[str, Any]) -> None:
+        print( f"PDFType3Font: spec={spec}") # Jimmy
         firstchar = int_value(spec.get("FirstChar", 0))
         # lastchar = int_value(spec.get('LastChar', 0))
         width_list = list_value(spec.get("Widths", [0] * 256))
@@ -1191,7 +1204,7 @@ class PDFCIDFont(PDFFont):
 
             # return self.unicode_map.get_unichr(cid) 
             x = self.unicode_map.get_unichr(cid) # Jimmy - Thai temporally fixed
-            if x  == "\x00": # Jimmy
+            if x  == "\x00": 
                 if self.basefont == "AAAAAA+BrowalliaNew":
                     if( cid >= 201 and cid <= 205 ):
                         x = chr(0xe48+(cid-201))
@@ -1203,6 +1216,9 @@ class PDFCIDFont(PDFFont):
                 else:
                     x  = "[" + str(cid) + "]"
                     print( f"Unknown CID: {x}" )
+            if x == " ":
+                #print( f"Space CID: {cid}" )
+                pass
             return x
         except KeyError:
             raise PDFUnicodeNotDefined(self.cidcoding, cid)
