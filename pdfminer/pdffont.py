@@ -1217,7 +1217,7 @@ class PDFCIDFont(PDFFont):
                         print( f"Unknown CID 1: {x}" )
                 elif self.basefont == "TimesNewRomanPSMT":
                     if( cid >= 3450 and cid < 3450+26 ):
-                        x = self.basefont + chr(ord('A')+(cid-3450))
+                        x = chr(ord('A')+(cid-3450))
                     else:
                         x  = "[(2)" + str(cid) + "]"
                         print( f"Unknown CID 2: {x}" )
