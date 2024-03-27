@@ -1210,12 +1210,20 @@ class PDFCIDFont(PDFFont):
                         x = chr(0xe48+(cid-201))
                     elif( cid >= 344 and cid <= 353 ):
                         x = chr(ord('0')+(cid-344))
+                    elif( cid >= 3450 and cid < 3450+26 ):
+                        x = chr(ord('A')+(cid-3450))
                     else:
-                        x = "[" + str(cid) + "]"
-                        print( f"Unknown CID: {x}" )
+                        x = "[(1)" + str(cid) + "]"
+                        print( f"Unknown CID 1: {x}" )
+                elif self.basefont == "TimesNewRomanPSMT":
+                    if( cid >= 3450 and cid < 3450+26 ):
+                        x = self.basefont + chr(ord('A')+(cid-3450))
+                    else:
+                        x  = "[(2)" + str(cid) + "]"
+                        print( f"Unknown CID 2: {x}" )
                 else:
-                    x  = "[" + str(cid) + "]"
-                    print( f"Unknown CID: {x}" )
+                    x  = "[(3)" + str(cid) + "]"
+                    print( f"Unknown CID 2: {x}" )
             if x == " ":
                 #print( f"Space CID: {cid}" )
                 pass
